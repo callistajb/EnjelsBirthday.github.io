@@ -128,10 +128,7 @@
   </style>
 </head>
 <body>
- <audio id="bgMusic" loop>
-  <source src="birthday.mp3" type="audio/mpeg">
-</audio>
-
+<audio id="bgMusic" src="birthday.mp3" preload="auto" loop></audio>
 <button id="musicBtn">🎵 Play Music</button>
   <style>#musicBtn {
   position: fixed;
@@ -175,15 +172,56 @@
 
   <div id="screen5" class="screen">
     <div id="balloons"></div>
-    <div class="letter">
-      <h1>For you 💌</h1>
-      <p>Terima kasih udah bertahan berteman dengan aku forrr 2026 - 2014 = 12.<br> 12 TAHUN ANJAYYY!!<br><br>Terima kasih atas tiap gambar gambar yang udah kamu bikinin tiap aku ultah.<br>And.. since aku ga bisa gambar, aku fomo liat orang orang yang ultahnya dibikinin website gitu wkwkw so why not aku bikinin buat kamu? Sooo, ini dia websitenya 😅 kurang sesuai sama ekspektasi aku but I do my best (semalem hehe🙏).</p></br><p>btw kamu bisa pop pop balloonya gitu kok</p>
+    <div class="letter" id="letterBox">
+      <style>.letter::after {
+        content: '|';
+        animation: blink 1s step-end infinite;
+      }
+      
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }</style>
+      
     </div>
   </div>
 
 <script>
 let current = 1;
 let balloonInterval;
+  // Simpan isi surat lengkap dengan tag HTML-nya di sini
+const letterHTML = `
+  <h1>For you 💌</h1>
+  <p>Terima kasih udah bertahan berteman dengan aku forrr 2026 - 2014 = 12.<br> 12 TAHUN ANJAYYY!!<br><br>Terima kasih atas tiap gambar gambar yang udah kamu bikinin tiap aku ultah.<br>And.. since aku ga bisa gambar, aku fomo liat orang orang yang ultahnya dibikinin website gitu wkwkw so why not aku bikinin buat kamu? Sooo, ini dia websitenya 😅 kurang sesuai sama ekspektasi aku but I do my best (semalem hehe🙏).</p><br><p>btw kamu bisa pop pop balloonya gitu kok</p>
+`;
+
+// Fungsi untuk mengetik teks, melompati tag HTML agar tidak error
+function typeWriter(element, text, speed) {
+  let i = 0;
+  element.innerHTML = ""; // Pastikan kosong saat dimulai
+  
+  function type() {
+    if (i < text.length) {
+      // Jika mendeteksi awalan tag HTML '<', langsung render seluruh tag-nya
+      if (text.charAt(i) === '<') {
+        let tagEnd = text.indexOf('>', i);
+        if (tagEnd !== -1) {
+          element.innerHTML += text.substring(i, tagEnd + 1);
+          i = tagEnd + 1;
+        }
+      } else {
+        // Jika teks biasa, ketik satu per satu
+        element.innerHTML += text.charAt(i);
+        i++;
+      }
+      setTimeout(type, speed);
+    } else {
+      // Hilangkan kursor kedap-kedip setelah selesai mengetik (Opsional)
+      element.style.setProperty('--cursor-display', 'none'); 
+    }
+  }
+  type();
+}
 const overlay = document.getElementById('overlay');
 const spotlight = document.getElementById('spotlight');
 const cakeEat = document.getElementById('cakeEat');
@@ -194,8 +232,12 @@ musicBtn.addEventListener('click', (e) => {
   e.stopPropagation();
 
   if (music.paused) {
-    music.play();
-    musicBtn.textContent = '🔇 Pause Music';
+    music.play().then(() => {
+      musicBtn.textContent = '🔇 Pause Music';
+    }).catch(error => {
+      console.error("Yah.. musiknya ga bisa diputer :(( sorry yaa,,:", error);
+      alert("Gagal memutar musik. Coba cek inspect element (F12)!");
+    });
   } else {
     music.pause();
     musicBtn.textContent = '🎵 Play Music';
@@ -336,6 +378,12 @@ document.getElementById('gift').addEventListener('click', (e) => {
   spotlight.style.opacity = 0;
   confetti({ particleCount: 120, spread: 90 });
   startBalloons();
+  
+  // Memulai efek pengetikan
+  // Angka 40 adalah kecepatan ngetik (dalam milidetik). 
+  // Semakin kecil angkanya, semakin cepat ngetiknya.
+  const letterBox = document.getElementById('letterBox');
+  typeWriter(letterBox, letterHTML, 40); 
 });
 </script>
 </body>
