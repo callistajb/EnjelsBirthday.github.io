@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Birthday Experience</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background: #fff3f7;
+      text-align: center;
+      color: #333;
+    }
+    .screen {
+      display: none;
+      height: 100vh;
+      width: 100vw;
+      padding: 24px;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      position: relative;
+      z-index: 2;
+    }
+    .active { display: flex; }
+    h1 { font-size: 2rem; }
+
+    .cake-area {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .cake {
+      font-size: 5.5rem;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      cursor: pointer;
+      user-select: none;
+    }
+    .candles {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      animation: spin 18s linear infinite;
+      z-index: 9;
+    }
+    .candles span {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      font-size: 1.4rem;
+      transform-origin: 0 -90px;
+      pointer-events: none;
+    }
+    @keyframes spin {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      pointer-events: none;
+      transition: background 0.4s ease;
+      z-index: 5;
+    }
+    #spotlight {
+      position: fixed;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 6;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,220,0.35) 35%, rgba(0,0,0,0) 70%);
+      filter: blur(0.5px);
+    }
+
+    .gift { font-size: 5rem; cursor: pointer; }
+    .letter {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 340px;
+      z-index: 10;
+    }
+
+    #balloons {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 7;
+      overflow: hidden;
+    }
+    .balloon {
+      position: absolute;
+      bottom: -80px;
+      font-size: 2.2rem;
+      cursor: pointer;
+      pointer-events: auto;
+      user-select: none;
+      animation: floatUp linear forwards;
+    }
+    .balloon.pop { animation: pop 0.25s ease-out forwards; }
+    @keyframes floatUp {
+      from { transform: translateY(0); }
+      to { transform: translateY(-120vh); }
+    }
+    @keyframes pop {
+      to { transform: scale(1.8); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay"></div>
+  <div id="spotlight"></div>
+
+  <div id="screen1" class="screen active">
+    <h1>happy birthday, Enjeliaa!!🥳🥳</h1>
+    <p>click anywhere ✨</p>
+  </div>
+
+  <div id="screen2" class="screen">
+    <h1>Make a wish</h1>
+    <br><p>Tahan screennya untuk tiup lilinnya yaa,,></p><br>
+    <div class="cake-area" id="cakeArea">
+      <div class="candles" id="candles"></div>
+      <div class="cake" id="cake">🎂</div>
+    </div>
+  </div>
+
+  <div id="screen3" class="screen">
+    <h1>Klik kuenyaa</h1>
+    <div class="cake" id="cakeEat">🍰</div>
+  </div>
+
+  <div id="screen4" class="screen">
+    <h1>Satu hal lagi..</h1>
+    <div class="gift" id="gift">🎁</div>
+  </div>
+
+  <div id="screen5" class="screen">
+    <div id="balloons"></div>
+    <div class="letter">
+      <h1>For you 💌</h1>
+      <p>Terima kasih udah bertahan berteman dengan aku forrr 2026 - 2014 = 12. 12 TAHUN ANJAYYY!!<br>Terima kasih atas tiap gambar gambar yang udah kamu bikinin tiap aku ultah.<br>And.. since aku ga bisa gambar, aku fomo liat orang orang yang ultahnya dibikinin website gitu wkwkw so why not aku bikinin buat kamu? Sooo, ini dia websitenya 😅 kurang sesuai sama ekspektasi aku but I do my best (semalem hehe🙏).</p></br><p>btw kamu bisa pop pop balloonya gitu kok</p>
+    </div>
+  </div>
+
+<script>
+let current = 1;
+let balloonInterval;
+const overlay = document.getElementById('overlay');
+const spotlight = document.getElementById('spotlight');
+const cakeEat = document.getElementById('cakeEat');
+
+function show(n){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen' + n).classList.add('active');
+}
+
+function spawnBalloon(){
+  const wrap = document.getElementById('balloons');
+  const b = document.createElement('div');
+  b.className = 'balloon';
+  b.textContent = '🎈';
+  b.style.left = Math.random() * 90 + 'vw';
+  b.style.animationDuration = (6 + Math.random() * 4) + 's';
+  b.addEventListener('click', (e) => {
+    e.stopPropagation();
+    b.classList.add('pop');
+    confetti({ particleCount: 12, spread: 30, origin: { x: e.clientX/window.innerWidth, y: e.clientY/window.innerHeight } });
+    setTimeout(() => b.remove(), 250);
+  });
+  wrap.appendChild(b);
+  setTimeout(() => b.remove(), 10000);
+}
+
+function startBalloons(){
+  clearInterval(balloonInterval);
+  for (let i = 0; i < 6; i++) setTimeout(spawnBalloon, i * 400);
+  balloonInterval = setInterval(spawnBalloon, 1200);
+}
+
+let targetX = window.innerWidth/2;
+let targetY = window.innerHeight/2;
+function updateSpotlightPosition(el = cakeEat){
+  const r = el.getBoundingClientRect();
+  targetX = r.left + r.width/2;
+  targetY = r.top + r.height/2;
+}
+(function animateSpotlight(){
+  const x = parseFloat(spotlight.dataset.x || targetX);
+  const y = parseFloat(spotlight.dataset.y || targetY);
+  const nx = x + (targetX - x) * 0.12;
+  const ny = y + (targetY - y) * 0.12;
+  spotlight.style.left = nx + 'px';
+  spotlight.style.top = ny + 'px';
+  spotlight.dataset.x = nx;
+  spotlight.dataset.y = ny;
+  requestAnimationFrame(animateSpotlight);
+})();
+
+function setDark(v){ overlay.style.background = `rgba(0,0,0,${v})`; }
+
+document.body.addEventListener('click', () => {
+  if (current === 1) {
+    current = 2;
+    show(2);
+  }
+  confetti({ particleCount: 20, spread: 40 });
+});
+
+const TOTAL = 21;
+let blown = 0;
+let hold;
+function render(){
+  const c = document.getElementById('candles');
+  c.innerHTML = '';
+  for(let i=0;i<TOTAL;i++){
+    const s = document.createElement('span');
+    s.textContent = i < (TOTAL - blown) ? '🕯️' : '💨';
+    const angle = (360/TOTAL) * i;
+    s.style.transform = `rotate(${angle}deg) translateY(-90px) rotate(-${angle}deg)`;
+    c.appendChild(s);
+  }
+}
+render();
+
+function start(){
+  hold = setInterval(() => {
+    if (blown < TOTAL) {
+      blown++;
+      render();
+      setDark((blown/TOTAL) * 0.65);
+    }
+    if (blown >= TOTAL) {
+      clearInterval(hold);
+      current = 3;
+      show(3);
+      spotlight.style.opacity = 1;
+      updateSpotlightPosition(cakeEat);
+    }
+  }, 120);
+}
+function end(){
+  clearInterval(hold);
+  if (blown < TOTAL) {
+    blown = 0;
+    render();
+    setDark(0);
+  }
+}
+const area = document.getElementById('cakeArea');
+area.addEventListener('mousedown', start);
+area.addEventListener('mouseup', end);
+area.addEventListener('mouseleave', end);
+area.addEventListener('touchstart', start);
+area.addEventListener('touchend', end);
+
+let step = 0;
+function moveCake(){
+  const x = 100 + Math.random() * (window.innerWidth - 200);
+  const y = 150 + Math.random() * (window.innerHeight - 300);
+  cakeEat.style.left = x + 'px';
+  cakeEat.style.top = y + 'px';
+}
+
+cakeEat.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const stages = ['🍰','🧁','🍴','✨'];
+  step++;
+  cakeEat.textContent = stages[step] || '✨';
+  moveCake();
+  updateSpotlightPosition(cakeEat);
+  if (step >= 3) {
+    current = 4;
+    show(4);
+    updateSpotlightPosition(document.getElementById('gift'));
+  }
+});
+
+document.getElementById('gift').addEventListener('click', (e) => {
+  e.stopPropagation();
+  current = 5;
+  show(5);
+  setDark(0);
+  spotlight.style.opacity = 0;
+  confetti({ particleCount: 120, spread: 90 });
+  startBalloons();
+});
+</script>
+</body>
+</html>
