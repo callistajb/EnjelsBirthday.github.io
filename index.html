@@ -128,6 +128,24 @@
   </style>
 </head>
 <body>
+ <audio id="bgMusic" loop>
+  <source src="Music: https://www.chosic.com/free-music/all/ " type="audio/mpeg">
+</audio>
+
+<button id="musicBtn">🎵 Play Music</button>
+  <style>#musicBtn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}</style>
   <div id="overlay"></div>
   <div id="spotlight"></div>
 
@@ -169,6 +187,20 @@ let balloonInterval;
 const overlay = document.getElementById('overlay');
 const spotlight = document.getElementById('spotlight');
 const cakeEat = document.getElementById('cakeEat');
+const music = document.getElementById('bgMusic');
+const musicBtn = document.getElementById('musicBtn');
+
+musicBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+
+  if (music.paused) {
+    music.play();
+    musicBtn.textContent = '🔇 Pause Music';
+  } else {
+    music.pause();
+    musicBtn.textContent = '🎵 Play Music';
+  }
+});
 
 function show(n){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
